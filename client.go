@@ -1,7 +1,6 @@
 package qywx
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -46,7 +45,7 @@ func (c *Client) getAccessToken(force bool) (string, error) {
 		}
 	}
 	u, _ := url.JoinPath(c.baseURL, "/cgi-bin/gettoken")
-	resp, err := c.req(u, "GET", nil, map[string]string{
+	resp, err := HttpRequest(u, "GET", nil, map[string]string{
 		"corpid":     c.corpId,
 		"corpsecret": c.corpSecret,
 	}, nil)
@@ -80,7 +79,7 @@ func (c *Client) send(data any, retry bool) error {
 	if err != nil {
 		return fmt.Errorf("获取 accessToken 异常: %v", err)
 	}
-	res, err := c.req(messageURL, "POST", nil, map[string]string{"access_token": token}, data)
+	res, err := HttpRequest(messageURL, "POST", nil, map[string]string{"access_token": token}, data)
 	if err != nil {
 		return fmt.Errorf("发送消息异常: %v", err)
 	}
@@ -116,40 +115,4 @@ func (c *Client) send(data any, retry bool) error {
 	} else {
 		return fmt.Errorf("错误码：%d，错误原因：%s", res.StatusCode, res.Status)
 	}
-}
-
-func (c *Client) req(urlStr string, method string, headers map[string]string,
-	params map[string]string, data any) (*http.Response, error) {
-	u, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, err
-	}
-	query := u.Query()
-	for k, v := range params {
-		query.Set(k, v)
-	}
-	u.RawQuery = query.Encode()
-	buf := new(bytes.Buffer)
-	if data != nil {
-		b, err := json.Marshal(data)
-		if err != nil {
-			return nil, err
-		}
-		buf = bytes.NewBuffer(b)
-	}
-	req, err := http.NewRequest(method, u.String(), buf)
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
-	if data != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	return resp, nil
 }
