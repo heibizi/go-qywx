@@ -1,4 +1,4 @@
-module go-qywx
+module github.com/heibizi/go-qywx
 
 go 1.22
 
