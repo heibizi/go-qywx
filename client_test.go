@@ -1,12 +1,13 @@
-package qywx
+package qywx_test
 
 import (
+	"github.com/heibizi/go-qywx"
 	"github.com/redis/go-redis/v9"
 	"os"
 	"testing"
 )
 
-var client *Client
+var client *qywx.Client
 
 func TestMain(m *testing.M) {
 	addr := os.Getenv("GO_QYWX_REDIS_ADDR")
@@ -14,7 +15,7 @@ func TestMain(m *testing.M) {
 	corpSecret := os.Getenv("GO_QYWX_CORP_SECRET")
 	agentId := os.Getenv("GO_QYWX_AGENT_ID")
 	var redisClient redis.UniversalClient = redis.NewClient(&redis.Options{Addr: addr})
-	client = NewClient(corpId, corpSecret, agentId, nil, redisClient)
+	client = qywx.NewClient(corpId, corpSecret, agentId, nil, redisClient)
 	m.Run()
 }
 
@@ -35,7 +36,7 @@ func TestWorkWXImageMessage(t *testing.T) {
 }
 
 func TestCustomListMessage(t *testing.T) {
-	err := client.SendList([]Article{
+	err := client.SendList([]qywx.Article{
 		{Title: "这是一条测试消息", Description: "", URL: "https://www.baidu.com",
 			PicURL: "https://wwcdn.weixin.qq.com/node/wework/images/Pic_right@2x.7a03a9d992.png"},
 		{Title: "这是一条测试消息", Description: "", URL: "https://www.baidu.com",
